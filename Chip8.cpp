@@ -168,8 +168,43 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 				V[0xF] = 0x0;
 				std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << " V[F] = 0x0 (Carry)" << "\n";
 			}
-
+			break;
+		}
+		/*8xy5 - SUB Vx, Vy
+		 Set Vx = Vx - Vy, set VF = NOT borrow.
+		 If Vx > Vy, then VF is set to 1, otherwise 0.
+		 Then Vy is subtracted from Vx, and the results stored in Vx.*/
+		case 0x0005: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			uint8_t Y = (opcode & 0x00F0) >> 4;
+			if (V[X] > V[Y]) {
+				V[0xF] = 1;
+				V[X] -= V[Y];
+			}
+			else {
+				V[0xF] = 0;
+				V[X] -= V[Y];
+			}
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] - " << "V[" << (int)Y << "]\n";
+			break;
+		}
+		/* 8xy6 - SHR Vx {, Vy}
+		Set Vx = Vx SHR 1.
+		If the least-significant bit of Vx is 1, 
+		then VF is set to 1, otherwise 0. 
+		Then Vx is divided by 2.*/
+		case 0x0006: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			uint8_t Y = (opcode & 0x00F0) >> 4;
 			
+			if (V[X] & 0b00000001) {
+				V[0xF] = 1;
+			}
+			else {
+				V[0xF] = 0;
+			}
+			V[X] = V[X] >> 1;
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] SHR " << "1\n";
 			break;
 		}
 	}
