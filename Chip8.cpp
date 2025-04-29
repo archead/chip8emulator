@@ -207,12 +207,35 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] SHR " << "1\n";
 			break;
 		}
-	}
-			   
-}
-	
-	
 
+		/*8xy7 - SUBN Vx, Vy
+		Set Vx = Vy - Vx, set VF = NOT borrow.
+		If Vy > Vx, then VF is set to 1, otherwise 0. 
+		Then Vx is subtracted from Vy, and the results stored in Vx.*/
+		case 0x0007: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			uint8_t Y = (opcode & 0x00F0) >> 4;
+			V[0xF] = V[Y] > V[X] ? 1 : 0;
+			V[X] = V[Y] - V[X];
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)Y << "] - [" << (int)X << "]\n";
+			break;
+		}
+
+		/*8xyE - SHL Vx {, Vy}
+		Set Vx = Vx SHL 1.
+		If the most-significant bit of Vx is 1, 
+		then VF is set to 1, otherwise to 0. 
+		Then Vx is multiplied by 2.*/
+		case 0x000E: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			uint8_t Y = (opcode & 0x00F0) >> 4;
+			V[0xF] = (V[X] & 0b10000000) ? 1 : 0;
+			V[X] = V[X] << 1;
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] SHL " << "1\n";
+			break;
+		}
+	}
+}
 	default:
 		std::cerr << "Unknown opcode: " << std::hex << opcode << "\n";
 		break;
