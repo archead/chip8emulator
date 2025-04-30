@@ -4,11 +4,13 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
+#include <random>
+#include <ctime>
 
 Chip8::Chip8()
 {
 	// normally you would load the font here, TODO
-
+	srand(time(0)); // for RND
 	pc = 0x200; // set the program counter back to initial position in memory
 }
 
@@ -37,7 +39,7 @@ void Chip8::Cycle()
 	// uses "or" | operator to join them together like so:
 	// XXXX0000 + 0000XXXX
 	uint16_t opcode = (memory[pc] << 8) | memory[pc + 1];
-	// crement the program counter by 2
+	// increment the program counter by 2
 	// since each instruction is made out of 2 bytes
 	pc += 2;
 	// self explanatory lol
@@ -47,6 +49,7 @@ void Chip8::Cycle()
 	if (delayTimer > 0) --delayTimer;
 	if (soundTimer > 0) --soundTimer;
 }
+
 
 void Chip8::ExecuteOpcode(uint16_t opcode)
 {
@@ -69,11 +72,90 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 		}
 		break;
 
+	/*1nnn - JP addr
+	Jump to location nnn.
+	The interpreter sets the program counter to nnn.*/
+	case 0x1000: {
+		uint16_t NNN = opcode & 0x0FFF;
+		pc = NNN;
+		std::cout << "[1NNN] Jump to " << std::hex << NNN << std::dec << "\n";
+		break;
+	}
+	
+	/*2nnn - CALL addr
+	Call subroutine at nnn.
+	The interpreter increments the stack pointer, 
+	then puts the current PC on the top of the stack.
+	The PC is then set to nnn.*/
+	case 0x2000: {
+		uint16_t NNN = opcode & 0x0FFF;
+		if (sp >= 15) {
+			std::cerr << "[2NNN] ERROR: STACK OVERFLOW!";
+			break;
+		}
+		sp++;
+		stack[sp] = pc;
+		pc = NNN;
+		break;
+	}
+
+	/*3xkk - SE Vx, byte
+	Skip next instruction if Vx = kk.
+	The interpreter compares register Vx to kk,
+	and if they are equal, increments the program counter by 2*/
+	case 0x3000: {
+		uint8_t X = (opcode & 0x0F00) >> 8;
+		uint8_t KK = (opcode & 0x0FF);
+
+		if (V[X] == KK) {
+			pc += 2;
+			std::cout << "[3XKK] V[" << X << "] == " << KK << " - skipping instruction" << "\n";
+			break;
+		}
+		
+		std::cout << "[3XKK] V[" << X << "] != " << KK << " - continuing" << "\n";
+		break;
+	}
+
+	/*4xkk - SNE Vx, byte
+	Skip next instruction if Vx != kk.
+	The interpreter compares register Vx to kk,
+	and if they are not equal, increments the program counter by 2.*/
+	case 0x4000: {
+		uint8_t X = (opcode & 0x0F00) >> 8;
+		uint8_t KK = opcode & 0x00FF;
+
+		if (V[X] != KK) {
+			pc += 2;
+			std::cout << "[4XKK] V[" << X << "] != " << KK << " - skipping instruction" << "\n";
+			break;
+		}
+
+		std::cout << "[4XKK] V[" << X << "] == " << KK << " - continuing" << "\n";
+		break;
+	}
+
+	/*5xy0 - SE Vx, Vy
+	Skip next instruction if Vx = Vy.
+	The interpreter compares register Vx to register Vy,
+	and if they are equal, increments the program counter by 2.*/
+	case 0x5000: {
+		uint8_t X = (opcode & 0x0F00) >> 8;
+		uint8_t Y = (opcode & 0x00F0) >> 4;
+
+		if (V[X] == V[Y]) {
+			pc += 2;
+			std::cout << "[5XY0] V[" << (int)X << "] == V[" << (int)Y << "] - skipping instruction" << "\n";
+			break;
+		}
+
+		std::cout << "[5XY0] V[" << (int)X << "] != V[" << (int)Y << "] - continuing" << "\n";
+		break;
+	}
+
 	/*6xkk - LD Vx, byte
 	Set Vx = kk.
-
 	The interpreter puts the value kk into register Vx.*/
-
 	case 0x6000: {
 		uint8_t X = (opcode & 0x0F00) >> 8;
 		uint8_t NN = opcode & 0x00FF;
@@ -85,7 +167,6 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 	/*7xkk - ADD Vx, byte
 	Set Vx = Vx + kk.
 	Adds the value kk to the value of register Vx, then stores the result in Vx.*/
-
 	case 0x7000: { 
 		uint8_t X = (opcode & 0x0F00) >> 8;
 		uint8_t NN = opcode & 0x00FF;
@@ -94,7 +175,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 		break;
 	}
 	
-	case 0x8000: {
+	case 0x8000: 
 		switch (opcode & 0x000F) {
 
 		/*8xy0 - LD Vx, Vy
@@ -107,7 +188,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			std::cout << "Set V[" << (int)X << "] = " << "V[" << (int)Y << "]\n";
 			break;
 		}
-		
+
 		/*8xy1 - OR Vx, Vy
 		Set Vx = Vx OR Vy.
 		Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx. 
@@ -147,7 +228,6 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			break;
 		}
 
-
 		/* 8xy4 - ADD Vx, Vy
 		 Set Vx = Vx + Vy, set VF = carry.
 		The values of Vx and Vy are added together.
@@ -161,15 +241,16 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			if (SUM > 255) {
 				V[X] = SUM & 0x00FF; // store the lowest 8 bits (0xFF = 0b11111111)
 				V[0xF] = 0x1;
-				std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << " V[F] = 0x1 (Carry)" << "\n";
+				std::cout << "8xy4 V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << ", V[F] = 0x1 (Carry)" << "\n";
 			}
 			else {
 				V[X] = SUM & 0x00FF; // store the lowest 8 bits as well since registers are 8-bit
 				V[0xF] = 0x0;
-				std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << " V[F] = 0x0 (Carry)" << "\n";
+				std::cout << "8xy4 V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << ", V[F] = 0x0 (Carry)" << "\n";
 			}
 			break;
 		}
+
 		/*8xy5 - SUB Vx, Vy
 		 Set Vx = Vx - Vy, set VF = NOT borrow.
 		 If Vx > Vy, then VF is set to 1, otherwise 0.
@@ -185,9 +266,10 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 				V[0xF] = 0;
 				V[X] -= V[Y];
 			}
-			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] - " << "V[" << (int)Y << "]\n";
+			std::cout << "8xy5: V[" << (int)X << "] = " << "V[" << (int)X << "] - " << "V[" << (int)Y << "]\n";
 			break;
 		}
+
 		/* 8xy6 - SHR Vx {, Vy}
 		Set Vx = Vx SHR 1.
 		If the least-significant bit of Vx is 1, 
@@ -234,8 +316,83 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] SHL " << "1\n";
 			break;
 		}
+
+		default:
+			std::cerr << "Unknown 0x8 opcode: " << std::hex << opcode << "\n";
 	}
-}
+		break;
+
+	/*9xy0 - SNE Vx, Vy
+	Skip next instruction if Vx != Vy.
+	The values of Vx and Vy are compared, 
+	and if they are not equal, the program counter is increased by 2.*/
+	case 0x9000: {
+		uint8_t X = (opcode & 0x0F00) >> 8;
+		uint8_t Y = (opcode & 0x00F0) >> 4;
+
+		if (V[X] != V[Y]) {
+			pc += 2;
+			std::cout << "[9XY0] V[" << (int)X << "] != V[" << (int)Y << "] - skipping instruction" << "\n";
+			break;
+		}
+
+		std::cout << "[9XY0] V[" << (int)X << "] == V[" << (int)Y << "] - continuing" << "\n";
+		break;
+	}
+
+	/*Annn - LD I, addr
+	Set I = nnn.
+	The value of register I is set to nnn.*/
+	case 0xA000: {
+		uint16_t NNN = opcode & 0x0FFF;
+		I = NNN;
+
+		std::cout << "[ANNN] I = " << (int)NNN << "\n";
+		break;
+	}
+
+	/*Bnnn - JP V0, addr
+	Jump to location nnn + V0.
+	The program counter is set to nnn plus the value of V0.*/
+	case 0xB000: {
+		uint16_t NNN = opcode & 0x0FFF;
+		pc = V[0x0] + NNN;
+		std::cout << "[BNNN] Jump to " << std::hex << (int)pc << std::dec << "\n";
+		break;
+	}
+
+	/*Cxkk - RND Vx, byte
+	Set Vx = random byte AND kk.
+	The interpreter generates a random number from 0 to 255, which is then ANDed with the value kk.
+	The results are stored in Vx. See instruction 8xy2 for more information on AND.*/
+	case 0xC000: {
+		uint8_t RND = rand() % 256;
+		uint8_t X = (opcode & 0x0F00) >> 8;
+		uint16_t KK = opcode & 0x00FF;
+		V[X] = RND & KK;
+		std::cout << "[CXKK] V[" << (int)X << "] = RND(" << RND << ") AND " << KK << "\n";
+		break;
+	}
+
+	/*Dxyn - DRW Vx, Vy, nibble
+	Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collision.
+	The interpreter reads n bytes from memory, starting at the address stored in I.
+	These bytes are then displayed as sprites on screen at coordinates (Vx, Vy).
+	Sprites are XORed onto the existing screen.
+	If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0.
+	If the sprite is positioned so part of it is outside the coordinates of the display, it wraps around to the opposite side of the screen.
+	See instruction 8xy3 for more information on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.*/
+
+	case 0xD000: {
+		uint8_t X = (opcode & 0x0F00) >> 8;
+		uint8_t Y = (opcode & 0x00F0) >> 4;
+		uint8_t n = opcode & 0x00F;
+		//TODO;
+		break;
+	}
+
+
+
 	default:
 		std::cerr << "Unknown opcode: " << std::hex << opcode << "\n";
 		break;

@@ -10,7 +10,11 @@ public:
 private:
 	uint8_t memory[4096]{};
 	uint8_t V[16]{};
+
+	// This register is generally used to store memory addresses,
+	// so only the lowest(rightmost) 12 bits are usually used.
 	uint16_t I = 0;
+
 	uint16_t pc = 0x200;
 	uint16_t stack[16]{};
 	uint8_t sp = 0;
