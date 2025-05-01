@@ -383,16 +383,154 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 	If the sprite is positioned so part of it is outside the coordinates of the display, it wraps around to the opposite side of the screen.
 	See instruction 8xy3 for more information on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.*/
 
-	case 0xD000: {
+	case 0xD000: { // NEEDS FIXIN
 		uint8_t X = (opcode & 0x0F00) >> 8;
 		uint8_t Y = (opcode & 0x00F0) >> 4;
-		uint8_t n = opcode & 0x00F;
-		//TODO;
+		uint8_t N = opcode & 0x00F;
+
+		uint16_t displayCoord = (V[X] % 64) + 64 * (V[Y] % 32);
+
+		V[0xF] = 0;
+
+		for (uint16_t memOffset = 0; memOffset < N; memOffset++) {
+
+			uint8_t spriteRow = memory[I + memOffset];
+
+			for (int i = 0; i < 8; i++) {
+
+				uint8_t bit = (spriteRow >> (7 - i)) & 0x1;
+
+				if (display[displayCoord] !=0 && bit !=0) {
+					V[0xF] = 1;
+				}
+
+				display[displayCoord] ^= bit;
+
+				if (++displayCoord % 64 == 0) {
+					displayCoord -= 64;
+				}
+				displayCoord += 64;
+			}
+			
+		}
 		break;
 	}
 
+	
+	case 0xE000:
+		switch (opcode & 0x00FF) {
 
+			/*Ex9E - SKP Vx
+			Skip next instruction if key with the value of Vx is pressed.
+			Checks the keyboard, and if the key corresponding to the value of Vx
+			is currently in the down position, PC is increased by 2.*/
+			case 0x009E: {
+				uint8_t X = (opcode & 0x0F00) >> 8;
+				if (keypad[V[X]]) {
+					pc += 2;
+					std::cout << "[EX9E] Key " << (int)V[X] << " is pressed - skipping instruction" << "\n";
+				}
+				break;
+			}
+			/*ExA1 - SKNP Vx
+			Skip next instruction if key with the value of Vx is not pressed.
+			Checks the keyboard, and if the key corresponding to the value of Vx
+			is currently in the up position, PC is increased by 2.*/
+			case 0x00A1: {
+				uint8_t X = (opcode & 0x0F00) >> 8;
+				if (!keypad[V[X]]) {
+					pc += 2;
+					std::cout << "[EXA1] Key " << (int)V[X] << " is not pressed - skipping instruction" << "\n";
+				}
+				break;
+			}
+		}
+	case 0xF000:
 
+		switch (opcode & 0x00FF) {
+
+		/*Fx07 - LD Vx, DT
+		Set Vx = delay timer value.
+		The value of DT is placed into Vx.*/
+		case 0x0007: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			V[X] = delayTimer;
+			break;
+		}
+		
+		/*Fx0A - LD Vx, K
+		Wait for a key press, store the value of the key in Vx.
+		All execution stops until a key is pressed, then the value of that key is stored in Vx.*/
+		case 0x000A: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			bool pressed = false;
+			while (!pressed) {
+				for (int i = 0; i < 16; i++) {
+					if (keypad[i]) {
+						V[X] = i;
+						pressed = true;
+						break;
+					}
+				}
+			}
+			break;
+		}
+
+		/*Fx15 - LD DT, Vx
+		Set delay timer = Vx.
+		DT is set equal to the value of Vx.*/
+		case 0x0015: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			delayTimer = V[X];
+			break;
+		}
+
+		/*Fx18 - LD ST, Vx
+		Set sound timer = Vx.
+		ST is set equal to the value of Vx.*/
+		case 0x0018: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			soundTimer = V[X];
+			break;
+		}
+
+		/*Fx1E - ADD I, Vx
+		Set I = I + Vx.
+		The values of I and Vx are added, and the results are stored in I.*/
+		case 0x001E: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			I += V[X];
+			break;
+		}
+
+		/*Fx29 - LD F, Vx
+		Set I = location of sprite for digit Vx.
+		The value of I is set to the location for the hexadecimal sprite corresponding to the value of Vx.
+		See section 2.4, Display, for more information on the Chip-8 hexadecimal font.
+		The data should be stored in the interpreter area of Chip-8 memory (0x000 to 0x1FF).*/
+		case 0x0029: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			I = 0x50 + (V[X] * 5);
+			break;
+		}
+
+		case 0x0033: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			break;
+
+		}
+		case 0x0055: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			break;
+
+		}
+		case 0x0065: {
+			uint8_t X = (opcode & 0x0F00) >> 8;
+			break;
+		}
+
+		}
+	
 	default:
 		std::cerr << "Unknown opcode: " << std::hex << opcode << "\n";
 		break;
