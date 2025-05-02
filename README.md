@@ -4,7 +4,7 @@ been putting this off for almost 4 years, finally taking a crack at it
 
 - [x] 00E0 – CLS: Clear the display
 - [x] 00EE – RET: Return from subroutine
-- [ ] 0nnn – SYS addr: Jump to a machine code routine at nnn (ignored in most interpreters)
+- [x] 0nnn – SYS addr: Jump to a machine code routine at nnn (ignored in most interpreters)
 - [x] 1nnn – JP addr: Jump to location nnn
 - [x] 2nnn – CALL addr: Call subroutine at nnn
 - [x] 3xkk – SE Vx, byte: Skip next instruction if Vx == kk
@@ -25,7 +25,7 @@ been putting this off for almost 4 years, finally taking a crack at it
 - [x] Annn – LD I, addr: Set I = nnn
 - [x] Bnnn – JP V0, addr: Jump to location nnn + V0
 - [x] Cxkk – RND Vx, byte: Set Vx = random byte AND kk
-- [ ] Dxyn – DRW Vx, Vy, nibble: Display n-byte sprite at (Vx, Vy), set VF = collision
+- [x] Dxyn – DRW Vx, Vy, nibble: Display n-byte sprite at (Vx, Vy), set VF = collision
 - [x] Ex9E – SKP Vx: Skip next instruction if key with value of Vx is pressed
 - [x] ExA1 – SKNP Vx: Skip next instruction if key with value of Vx is not pressed
 - [x] Fx07 – LD Vx, DT: Set Vx = delay timer value
@@ -34,7 +34,7 @@ been putting this off for almost 4 years, finally taking a crack at it
 - [x] Fx18 – LD ST, Vx: Set sound timer = Vx
 - [x] Fx1E – ADD I, Vx: Set I = I + Vx
 - [x] Fx29 – LD F, Vx: Set I = location of sprite for digit Vx
-- [ ] Fx33 – LD B, Vx: Store BCD representation of Vx in memory at I, I+1, I+2
-- [ ] Fx55 – LD [I], Vx: Store registers V0 through Vx in memory starting at I
-- [ ] Fx65 – LD Vx, [I]: Read registers V0 through Vx from memory starting at I
+- [x] Fx33 – LD B, Vx: Store BCD representation of Vx in memory at I, I+1, I+2
+- [x] Fx55 – LD [I], Vx: Store registers V0 through Vx in memory starting at I
+- [x] Fx65 – LD Vx, [I]: Read registers V0 through Vx from memory starting at I
 
