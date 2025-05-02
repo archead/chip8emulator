@@ -1,7 +1,7 @@
 # chip8emulator
-been putting this off for almost 4 years, finally taking a crack at it                                                                           
-## Instruction Implementation Progress:
+been putting this off for almost 4 years, finally taking a crack at it
 
+## Instruction Implementation Progress [COMPLETED]
 - [x] 00E0 – CLS: Clear the display
 - [x] 00EE – RET: Return from subroutine
 - [x] 0nnn – SYS addr: Jump to a machine code routine at nnn (ignored in most interpreters)
