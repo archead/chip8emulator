@@ -21,6 +21,8 @@ private:
 	uint8_t delayTimer = 0;
 	uint8_t soundTimer = 0;
 	uint8_t keypad[16]{};
+public:
+	bool drawFlag = false;
 	uint8_t display[64 * 32]{};
 
 	void ExecuteOpcode(uint16_t opcode);
