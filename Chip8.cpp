@@ -57,7 +57,7 @@ void Chip8::LoadROM(const std::string& filename)
 {
 	std::ifstream file(filename, std::ios::binary);
 	if (!file) {
-		//std::cerr << "Failed to open ROM: " << filename << "\n";
+		std::cerr << "Failed to open ROM: " << filename << "\n";
 		return;
 	}
 
@@ -98,15 +98,15 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 		switch (opcode & 0x00ff) {
 		case 0x00E0:
 			std::memset(display, 0, sizeof(display));
-			//std::cout << "Screen cleared\n";
+			std::cout << "Screen cleared\n";
 			break;
 		case 0x00EE:
 			--sp;
 			pc = stack[sp];
-			//std::cout << "Returning from subroutine\n";
+			std::cout << "Returning from subroutine\n";
 			break;
 		default:
-			//std::cerr << "Unknown 0x0 opcode: " << std::hex << opcode << "\n";
+			std::cerr << "Unknown 0x0 opcode: " << std::hex << opcode << "\n";
 			break;
 		}
 		break;
@@ -117,7 +117,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 	case 0x1000: {
 		uint16_t NNN = opcode & 0x0FFF;
 		pc = NNN;
-		//std::cout << "[1NNN] Jump to " << std::hex << NNN << std::dec << "\n";
+		std::cout << "[1NNN] Jump to " << std::hex << NNN << std::dec << "\n";
 		break;
 	}
 	
@@ -149,11 +149,11 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 
 		if (V[X] == KK) {
 			pc += 2;
-			//std::cout << "[3XKK] V[" << X << "] == " << KK << " - skipping instruction" << "\n";
+			std::cout << "[3XKK] V[" << X << "] == " << KK << " - skipping instruction" << "\n";
 			break;
 		}
 		
-		//std::cout << "[3XKK] V[" << X << "] != " << KK << " - continuing" << "\n";
+		std::cout << "[3XKK] V[" << X << "] != " << KK << " - continuing" << "\n";
 		break;
 	}
 
@@ -167,11 +167,11 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 
 		if (V[X] != KK) {
 			pc += 2;
-			//std::cout << "[4XKK] V[" << X << "] != " << KK << " - skipping instruction" << "\n";
+			std::cout << "[4XKK] V[" << X << "] != " << KK << " - skipping instruction" << "\n";
 			break;
 		}
 
-		//std::cout << "[4XKK] V[" << X << "] == " << KK << " - continuing" << "\n";
+		std::cout << "[4XKK] V[" << X << "] == " << KK << " - continuing" << "\n";
 		break;
 	}
 
@@ -185,11 +185,11 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 
 		if (V[X] == V[Y]) {
 			pc += 2;
-			//std::cout << "[5XY0] V[" << (int)X << "] == V[" << (int)Y << "] - skipping instruction" << "\n";
+			std::cout << "[5XY0] V[" << (int)X << "] == V[" << (int)Y << "] - skipping instruction" << "\n";
 			break;
 		}
 
-		//std::cout << "[5XY0] V[" << (int)X << "] != V[" << (int)Y << "] - continuing" << "\n";
+		std::cout << "[5XY0] V[" << (int)X << "] != V[" << (int)Y << "] - continuing" << "\n";
 		break;
 	}
 
@@ -200,7 +200,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 		uint8_t X = (opcode & 0x0F00) >> 8;
 		uint8_t NN = opcode & 0x00FF;
 		V[X] = NN;
-		//std::cout << "Set V[" << (int)X << "] = " << (int)NN << "\n";
+		std::cout << "Set V[" << (int)X << "] = " << (int)NN << "\n";
 		break;
 	}
 
@@ -211,7 +211,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 		uint8_t X = (opcode & 0x0F00) >> 8;
 		uint8_t NN = opcode & 0x00FF;
 		V[X] += NN;
-		//std::cout << "Add " << (int)NN << " to V[" << (int)X << "]\n";
+		std::cout << "Add " << (int)NN << " to V[" << (int)X << "]\n";
 		break;
 	}
 	
@@ -225,7 +225,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			uint8_t X = (opcode & 0x0F00) >> 8;
 			uint8_t Y = (opcode & 0x00F0) >> 4;
 			V[X] = V[Y];
-			//std::cout << "Set V[" << (int)X << "] = " << "V[" << (int)Y << "]\n";
+			std::cout << "Set V[" << (int)X << "] = " << "V[" << (int)Y << "]\n";
 			break;
 		}
 
@@ -238,7 +238,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			uint8_t X = (opcode & 0x0F00) >> 8;
 			uint8_t Y = (opcode & 0x00F0) >> 4;
 			V[X] = (V[X] | V[Y]);
-			//std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] OR " << "V[" << (int)Y << "]\n";
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] OR " << "V[" << (int)Y << "]\n";
 			break;
 		}
 
@@ -251,7 +251,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			uint8_t X = (opcode & 0x0F00) >> 8;
 			uint8_t Y = (opcode & 0x00F0) >> 4;
 			V[X] = (V[X] & V[Y]);
-			//std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] AND " << "V[" << (int)Y << "]\n";
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] AND " << "V[" << (int)Y << "]\n";
 			break;
 		}
 
@@ -264,7 +264,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			uint8_t X = (opcode & 0x0F00) >> 8;
 			uint8_t Y = (opcode & 0x00F0) >> 4;
 			V[X] = (V[X] ^ V[Y]);
-			//std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] XOR " << "V[" << (int)Y << "]\n";
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] XOR " << "V[" << (int)Y << "]\n";
 			break;
 		}
 
@@ -281,12 +281,12 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			if (SUM > 255) {
 				V[X] = SUM & 0x00FF; // store the lowest 8 bits (0xFF = 0b11111111)
 				V[0xF] = 0x1;
-				//std::cout << "8xy4 V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << ", V[F] = 0x1 (Carry)" << "\n";
+				std::cout << "8xy4 V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << ", V[F] = 0x1 (Carry)" << "\n";
 			}
 			else {
 				V[X] = SUM & 0x00FF; // store the lowest 8 bits as well since registers are 8-bit
 				V[0xF] = 0x0;
-				//std::cout << "8xy4 V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << ", V[F] = 0x0 (Carry)" << "\n";
+				std::cout << "8xy4 V[" << (int)X << "] = " << "V[" << (int)X << "] + " << "V[" << (int)Y << "]" << ", V[F] = 0x0 (Carry)" << "\n";
 			}
 			break;
 		}
@@ -306,7 +306,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 				V[0xF] = 0;
 				V[X] -= V[Y];
 			}
-			//std::cout << "8xy5: V[" << (int)X << "] = " << "V[" << (int)X << "] - " << "V[" << (int)Y << "]\n";
+			std::cout << "8xy5: V[" << (int)X << "] = " << "V[" << (int)X << "] - " << "V[" << (int)Y << "]\n";
 			break;
 		}
 
@@ -326,7 +326,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 				V[0xF] = 0;
 			}
 			V[X] = V[X] >> 1;
-			//std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] SHR " << "1\n";
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] SHR " << "1\n";
 			break;
 		}
 
@@ -339,7 +339,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			uint8_t Y = (opcode & 0x00F0) >> 4;
 			V[0xF] = V[Y] > V[X] ? 1 : 0;
 			V[X] = V[Y] - V[X];
-			//std::cout << "V[" << (int)X << "] = " << "V[" << (int)Y << "] - [" << (int)X << "]\n";
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)Y << "] - [" << (int)X << "]\n";
 			break;
 		}
 
@@ -353,12 +353,12 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			uint8_t Y = (opcode & 0x00F0) >> 4;
 			V[0xF] = (V[X] & 0b10000000) ? 1 : 0;
 			V[X] = V[X] << 1;
-			//std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] SHL " << "1\n";
+			std::cout << "V[" << (int)X << "] = " << "V[" << (int)X << "] SHL " << "1\n";
 			break;
 		}
 
 		default:
-			//std::cerr << "Unknown 0x8 opcode: " << std::hex << opcode << "\n";
+			std::cerr << "Unknown 0x8 opcode: " << std::hex << opcode << "\n";
 			break;
 	}
 		break;
@@ -373,11 +373,11 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 
 		if (V[X] != V[Y]) {
 			pc += 2;
-			//std::cout << "[9XY0] V[" << (int)X << "] != V[" << (int)Y << "] - skipping instruction" << "\n";
+			std::cout << "[9XY0] V[" << (int)X << "] != V[" << (int)Y << "] - skipping instruction" << "\n";
 			break;
 		}
 
-		//std::cout << "[9XY0] V[" << (int)X << "] == V[" << (int)Y << "] - continuing" << "\n";
+		std::cout << "[9XY0] V[" << (int)X << "] == V[" << (int)Y << "] - continuing" << "\n";
 		break;
 	}
 
@@ -388,7 +388,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 		uint16_t NNN = opcode & 0x0FFF;
 		I = NNN;
 
-		//std::cout << "[ANNN] I = " << (int)NNN << "\n";
+		std::cout << "[ANNN] I = " << (int)NNN << "\n";
 		break;
 	}
 
@@ -398,7 +398,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 	case 0xB000: {
 		uint16_t NNN = opcode & 0x0FFF;
 		pc = V[0x0] + NNN;
-		//std::cout << "[BNNN] Jump to " << std::hex << (int)pc << std::dec << "\n";
+		std::cout << "[BNNN] Jump to " << std::hex << (int)pc << std::dec << "\n";
 		break;
 	}
 
@@ -411,7 +411,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 		uint8_t X = (opcode & 0x0F00) >> 8;
 		uint16_t KK = opcode & 0x00FF;
 		V[X] = RND & KK;
-		//std::cout << "[CXKK] V[" << (int)X << "] = RND(" << RND << ") AND " << KK << "\n";
+		std::cout << "[CXKK] V[" << (int)X << "] = RND(" << RND << ") AND " << KK << "\n";
 		break;
 	}
 
@@ -466,7 +466,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 				uint8_t X = (opcode & 0x0F00) >> 8;
 				if (keypad[V[X]]) {
 					pc += 2;
-					//std::cout << "[EX9E] Key " << (int)V[X] << " is pressed - skipping instruction" << "\n";
+					std::cout << "[EX9E] Key " << (int)V[X] << " is pressed - skipping instruction" << "\n";
 				}
 				break;
 			}
@@ -478,13 +478,13 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 				uint8_t X = (opcode & 0x0F00) >> 8;
 				if (!keypad[V[X]]) {
 					pc += 2;
-					//std::cout << "[EXA1] Key " << (int)V[X] << " is not pressed - skipping instruction" << "\n";
+					std::cout << "[EXA1] Key " << (int)V[X] << " is not pressed - skipping instruction" << "\n";
 				}
 				break;
 			}
 
 			default:
-				//std::cerr << "Unknown 0xF opcode: " << std::hex << opcode << "\n";
+				std::cerr << "Unknown 0xF opcode: " << std::hex << opcode << "\n";
 				break;
 		}
 		break;
@@ -554,7 +554,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 		case 0x0029: {
 			uint8_t X = (opcode & 0x0F00) >> 8;
 			I = 0x50 + (V[X] * 5);
-			//std::cout << "[FX29] I = " << (int)V[X] * 5 << "\n";
+			std::cout << "[FX29] I = " << (int)V[X] * 5 << "\n";
 			break;
 		}
 		/*Fx33 - LD B, Vx
@@ -570,7 +570,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			memory[I + 1] = (Vx / 10) % 10;
 			memory[I + 2] = Vx % 10;
 
-			//std::cout << "[FX33] I = " << (int)Vx << "\n";
+			std::cout << "[FX33] I = " << (int)Vx << "\n";
 			break;
 		}
 
@@ -584,7 +584,7 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 			// X + 1 since it's size of array not index
 			memcpy(&memory[I], V, (X + 1) * sizeof(uint8_t));
 
-			//std::cout << "[FX55] Dump register from V[0] to V[" << int(X) << "]\n";
+			std::cout << "[FX55] Dump register from V[0] to V[" << int(X) << "]\n";
 			break;
 		}
 
@@ -597,14 +597,14 @@ void Chip8::ExecuteOpcode(uint16_t opcode)
 
 			memcpy(V, &memory[I], (X + 1) * sizeof(uint8_t));
 
-			//std::cout << "[FX65] Load from I to registers from V[0] to V[" << int(X) << "]\n";
+			std::cout << "[FX65] Load from I to registers from V[0] to V[" << int(X) << "]\n";
 			break;
 		}
 		}
 		break;
 	
 	default:
-		//std::cerr << "Unknown opcode: " << std::hex << opcode << "\n";
+		std::cerr << "Unknown opcode: " << std::hex << opcode << "\n";
 		break;
 	}
 }
