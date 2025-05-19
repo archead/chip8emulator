@@ -1,6 +1,11 @@
 # chip8emulator
 been putting this off for almost 4 years, finally taking a crack at it
 
+  ## Now Featuring Display Buffer Rendering via SDL2!
+![2025-05-18_22-40-15-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/0155bec0-0355-4c4b-8222-b85362bf0019)
+
+
+
 ## Instruction Implementation Progress [COMPLETED]
 - [x] 00E0 – CLS: Clear the display
 - [x] 00EE – RET: Return from subroutine
